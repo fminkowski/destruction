@@ -47,6 +47,10 @@ struct GLProgram {
     void use() {
         glUseProgram(id);
     }
+
+    void draw(int count) {
+        glDrawArrays(GL_TRIANGLES, 0, count);
+    }
 }
 
 GLProgram create_program(string vertex_shader_text,
