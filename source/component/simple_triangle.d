@@ -34,42 +34,42 @@ class SimpleTriangle : IComponent
     ];
 
     void run(Context ctx) {
-        if (!is_init) {
-            is_init = true;
-            GLuint vertex_buffer, vertex_shader, fragment_shader;
-            GLint vpos_location, vcol_location;
-
-            import std.string;
-            glGenBuffers(1, &vertex_buffer);
-            glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-            glBufferData(GL_ARRAY_BUFFER, vertices.sizeof, cast(const void*)(vertices), GL_STATIC_DRAW);
-
-            vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-            const char* vst = toStringz(vertex_shader_text);
-            glShaderSource(vertex_shader, 1, &vst, null);
-            glCompileShader(vertex_shader);
-
-            fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-            const char* fst = toStringz(fragment_shader_text);
-            glShaderSource(fragment_shader, 1, &fst, null);
-            glCompileShader(fragment_shader);
-
-            program = glCreateProgram();
-            glAttachShader(program, vertex_shader);
-            glAttachShader(program, fragment_shader);
-            glLinkProgram(program);
-
-            vpos_location = glGetAttribLocation(program, "vPos");
-            vcol_location = glGetAttribLocation(program, "vCol");
-            glEnableVertexAttribArray(vpos_location);
-            glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE,
-                                  float.sizeof * 5, cast(void*) 0);
-            glEnableVertexAttribArray(vcol_location);
-            glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
-                                  float.sizeof * 5, cast(void*) (float.sizeof * 2));
-        }
         glUseProgram(program);
         glDrawArrays(GL_TRIANGLES, 0, 3);
+    }
+
+    void initialize(Context ctx) {
+        GLuint vertex_buffer, vertex_shader, fragment_shader;
+        GLint vpos_location, vcol_location;
+
+        import std.string;
+        glGenBuffers(1, &vertex_buffer);
+        glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+        glBufferData(GL_ARRAY_BUFFER, vertices.sizeof, cast(const void*)(vertices), GL_STATIC_DRAW);
+
+        vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+        const char* vst = toStringz(vertex_shader_text);
+        glShaderSource(vertex_shader, 1, &vst, null);
+        glCompileShader(vertex_shader);
+
+        fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+        const char* fst = toStringz(fragment_shader_text);
+        glShaderSource(fragment_shader, 1, &fst, null);
+        glCompileShader(fragment_shader);
+
+        program = glCreateProgram();
+        glAttachShader(program, vertex_shader);
+        glAttachShader(program, fragment_shader);
+        glLinkProgram(program);
+
+        vpos_location = glGetAttribLocation(program, "vPos");
+        vcol_location = glGetAttribLocation(program, "vCol");
+        glEnableVertexAttribArray(vpos_location);
+        glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE,
+                              float.sizeof * 5, cast(void*) 0);
+        glEnableVertexAttribArray(vcol_location);
+        glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
+                              float.sizeof * 5, cast(void*) (float.sizeof * 2));
     }
 }
 

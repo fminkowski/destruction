@@ -30,6 +30,7 @@ class App {
     FrameBuffer frame_buffer;
     IRouter router;
     double dt;
+    bool component_initialized = false;
 
     this(IRouter router) {
         this.router = router;
@@ -67,7 +68,12 @@ class App {
 
             context.frame_buffer = frame_buffer;
             context.dt = dt;
-            router.get_current().run(context);
+            auto component = router.get_current();
+            if (!component_initialized) {
+                component_initialized = true;
+                component.initialize(context);
+            }
+            component.run(context);
 
             glfwSwapBuffers(window);
             glfwPollEvents();
