@@ -4,8 +4,17 @@ import derelict.opengl;
 
 struct GLProgram {
     GLint id;
-    GLint[string] attribs;
-    GLint[string] uniforms;
+    GLuint[string] attribs;
+    GLuint[string] uniforms;
+
+    void describe(string attrib, int size, int num_elements, int offset) {
+        auto a = attribs[attrib];
+        glEnableVertexAttribArray(a);
+        glVertexAttribPointer(a, size,
+                              GL_FLOAT, GL_FALSE,
+                              cast(int)float.sizeof * num_elements,
+                              cast(void*) (float.sizeof * offset));
+    } 
 }
 
 GLProgram create_program(string vertex_shader_text,
