@@ -7,7 +7,6 @@ import util.gl;
 
 class SimpleTriangle : IComponent
 {
-    bool is_init;
     GLProgram program;
 
     string vertex_shader_text =
