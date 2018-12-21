@@ -3,20 +3,22 @@ module component.simple_triangle;
 import derelict.opengl;
 import manager.component;
 import util.math;
+import util.gl;
 
 class SimpleTriangle : IComponent
 {
     bool is_init;
-    GLint program;
+    GLProgram program;
 
     string vertex_shader_text =
     "attribute vec3 vCol;\n" ~
     "attribute vec2 vPos;\n" ~
     "varying vec3 color;\n" ~
+    "uniform float scale;\n" ~
     "void main()\n" ~
     "{\n" ~
     "    gl_Position = vec4(vPos, 0.0, 1.0);\n" ~
-    "    color = vCol;\n" ~
+    "    color = scale * vCol;\n" ~
     "}\n";
 
     string fragment_shader_text =
@@ -35,40 +37,34 @@ class SimpleTriangle : IComponent
 
     void initialize(Context ctx) {
         GLuint vertex_buffer, vertex_shader, fragment_shader;
-        GLint vpos_location, vcol_location;
 
         import std.string;
         glGenBuffers(1, &vertex_buffer);
         glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-        glBufferData(GL_ARRAY_BUFFER, vertices.sizeof, cast(const void*)(vertices), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER,
+                     vertices.sizeof,
+                     cast(const void*)(vertices),
+                     GL_STATIC_DRAW);
 
-        vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-        const char* vst = toStringz(vertex_shader_text);
-        glShaderSource(vertex_shader, 1, &vst, null);
-        glCompileShader(vertex_shader);
+        program = create_program(vertex_shader_text,
+                                      fragment_shader_text,
+                                      ["vPos", "vCol"],
+                                      ["scale"]);
 
-        fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-        const char* fst = toStringz(fragment_shader_text);
-        glShaderSource(fragment_shader, 1, &fst, null);
-        glCompileShader(fragment_shader);
-
-        program = glCreateProgram();
-        glAttachShader(program, vertex_shader);
-        glAttachShader(program, fragment_shader);
-        glLinkProgram(program);
-
-        vpos_location = glGetAttribLocation(program, "vPos");
-        vcol_location = glGetAttribLocation(program, "vCol");
-        glEnableVertexAttribArray(vpos_location);
-        glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE,
+        auto vpos = program.attribs["vPos"];
+        glEnableVertexAttribArray(vpos);
+        glVertexAttribPointer(vpos, 2, GL_FLOAT, GL_FALSE,
                               float.sizeof * 5, cast(void*) 0);
-        glEnableVertexAttribArray(vcol_location);
-        glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
+        
+        auto vcol = program.attribs["vCol"];
+        glEnableVertexAttribArray(vcol);
+        glVertexAttribPointer(vcol, 3, GL_FLOAT, GL_FALSE,
                               float.sizeof * 5, cast(void*) (float.sizeof * 2));
     }
 
     void run(Context ctx) {
-        glUseProgram(program);
+        glUseProgram(program.id);
+        glUniform1f(program.uniforms["scale"], 0.5);
         glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 }
