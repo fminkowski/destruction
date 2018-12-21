@@ -2,12 +2,7 @@ module component.simple_triangle;
 
 import derelict.opengl;
 import manager.component;
-
-struct Vertex
-{
-    float x, y;
-    float r, g, b;
-} 
+import util.math;
 
 class SimpleTriangle : IComponent
 {
