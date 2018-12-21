@@ -1,6 +1,3 @@
-import std.stdio;
-import std.conv;
-import derelict.opengl;
 import app;
 import router;
 import component;
