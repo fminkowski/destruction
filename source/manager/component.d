@@ -11,6 +11,6 @@ struct Context {
 }
 
 interface IComponent {
-    void run(Context context);
     void initialize(Context context);
+    void run(Context context);
 }

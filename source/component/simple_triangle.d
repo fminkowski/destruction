@@ -33,11 +33,6 @@ class SimpleTriangle : IComponent
         Vertex(  0f,  0.6f, 0f, 0f, 1f )
     ];
 
-    void run(Context ctx) {
-        glUseProgram(program);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-    }
-
     void initialize(Context ctx) {
         GLuint vertex_buffer, vertex_shader, fragment_shader;
         GLint vpos_location, vcol_location;
@@ -70,6 +65,11 @@ class SimpleTriangle : IComponent
         glEnableVertexAttribArray(vcol_location);
         glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
                               float.sizeof * 5, cast(void*) (float.sizeof * 2));
+    }
+
+    void run(Context ctx) {
+        glUseProgram(program);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 }
 
