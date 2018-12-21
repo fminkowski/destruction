@@ -5,7 +5,7 @@ import derelict.opengl;
 struct GLProgram {
     GLint id;
     GLuint[string] attribs;
-    GLuint[string] uniforms;
+    GLint[string] uniforms;
 
     void create_buffer(T)(T vertices) {
         GLuint vertex_buffer;
@@ -26,6 +26,27 @@ struct GLProgram {
                               cast(void*) (float.sizeof * offset));
         glEnableVertexAttribArray(0);
     } 
+
+    void set_uniform(string uniform, float[] values) {
+        auto id = uniforms[uniform];
+        switch (values.length) {
+        case 1:
+            glUniform1f(id, values[0]);
+            break;
+        case 2:
+            glUniform2f(id, values[0], values[1]);
+            break;
+        case 3:
+            glUniform3f(id, values[0], values[1], values[2]);
+            break;
+        default:
+            glUniform4f(id, values[0], values[1], values[2], values[3]);
+        }
+    }
+
+    void use() {
+        glUseProgram(id);
+    }
 }
 
 GLProgram create_program(string vertex_shader_text,
@@ -37,16 +58,30 @@ GLProgram create_program(string vertex_shader_text,
     GLint program_id, vpos_location, vcol_location;
 
     import std.string;
+    import std.stdio;
+    import std.conv;
+    int success;
+    char[512] infoLog;
 
     vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     const char* vst = toStringz(vertex_shader_text);
     glShaderSource(vertex_shader, 1, &vst, null);
     glCompileShader(vertex_shader);
+    glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
+    if (success == 0) {
+        glGetShaderInfoLog(vertex_shader, infoLog.length, null, infoLog.ptr);
+        writeln(to!string(infoLog));
+    }
 
     fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
     const char* fst = toStringz(fragment_shader_text);
     glShaderSource(fragment_shader, 1, &fst, null);
     glCompileShader(fragment_shader);
+    glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
+    if (success == 0) {
+        glGetShaderInfoLog(fragment_shader, infoLog.length, null, infoLog.ptr);
+        writeln(to!string(infoLog));
+    }
 
     program_id = glCreateProgram();
     glAttachShader(program_id, vertex_shader);

@@ -7,13 +7,15 @@ import util.gl;
 
 class SimpleTriangle : IComponent
 {
+    import std.math;
     GLProgram program;
+    double t = 0;
 
     string vertex_shader_text =
     "attribute vec3 vCol;\n" ~
     "attribute vec2 vPos;\n" ~
     "varying vec3 color;\n" ~
-    "uniform float scale;\n" ~
+    "uniform vec3 scale;\n" ~
     "void main()\n" ~
     "{\n" ~
     "    gl_Position = vec4(vPos, 0.0, 1.0);\n" ~
@@ -45,13 +47,15 @@ class SimpleTriangle : IComponent
         program.describe_attrib("vPos", 2, 5, 0);
         program.describe_attrib("vCol", 3, 5, 2);
     }
-    double t = 0;
+
     void run(Context ctx) {
-        import std.math;
-        glUseProgram(program.id);
+        program.use();
         t += ctx.dt;
         auto c = cos(t);
-        glUniform1f(program.uniforms["scale"], 0.1 + c * c);
+        auto s = sin(t);
+        float[] v = [c*c, s*s, c*c];
+        program.set_uniform("scale", v);
+
         glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 }
