@@ -3,15 +3,42 @@ import std.conv;
 import derelict.glfw3.glfw3;
 import derelict.opengl;
 
+struct Context {
+    FrameBuffer frame_buffer;
+    double dt;
+}
+
+interface IComponent {
+    void run(Context context);
+}
+
+interface IRouter {
+    void register(string route_name, IComponent component);
+    void use_route(string route_name);
+    IComponent get_current();
+}
+
+class ComponentRouter : IRouter {
+    string current_route;
+    IComponent[string] components;
+    void register(string route_name, IComponent component) {
+        components[route_name] = component;
+    }
+
+    void use_route(string route_name) {
+        current_route = route_name;
+    }
+
+    IComponent get_current() {
+        return components[current_route];
+    }
+}
+
 struct FrameBuffer {
     int width;
     int height; 
 }
 
-struct AppState {
-    FrameBuffer frame_buffer;
-    double dt;
-}
 
 extern(C) 
 void error_callback(int error, const(char)* description) nothrow
@@ -32,48 +59,62 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
 }
 
-void main()
-{
-    DerelictGLFW3.load();
-    DerelictGL3.load();
-    glfwSetErrorCallback(&error_callback);
-    if (!glfwInit())
-    {
-        writeln("failed to init glfw");
+class App {
+    FrameBuffer frame_buffer;
+    IRouter router;
+    double dt;
+
+    this(IRouter router) {
+        this.router = router;
     }
-    scope(exit) glfwTerminate();
 
-    GLFWwindow* window = glfwCreateWindow(640, 480, "Destruction", null, null);
-    if (!window)
-    {
-        writeln("could not create window");
-    }
-    scope(exit) glfwDestroyWindow(window);
+    void run() {
+        DerelictGLFW3.load();
+        DerelictGL3.load();
+        glfwSetErrorCallback(&error_callback);
+        if (!glfwInit())
+        {
+            writeln("failed to init glfw");
+        }
+        scope(exit) glfwTerminate();
 
-    glfwMakeContextCurrent(window);
-    auto vers = DerelictGL3.reload();
-    glfwSwapInterval(1);
+        GLFWwindow* window = glfwCreateWindow(640, 480, "Destruction", null, null);
+        if (!window)
+        {
+            writeln("could not create window");
+        }
+        scope(exit) glfwDestroyWindow(window);
 
-    AppState state;
-    glfwGetFramebufferSize(window, &state.frame_buffer.width, &state.frame_buffer.height);
-    glViewport(0, 0, state.frame_buffer.width, state.frame_buffer.height);
-    glfwSetKeyCallback(window, &key_callback);
+        glfwMakeContextCurrent(window);
+        auto vers = DerelictGL3.reload();
+        glfwSwapInterval(1);
 
-    while (!glfwWindowShouldClose(window)) {
-        auto start_time = glfwGetTime();
-        glfwPollEvents();
-        glClear(GL_COLOR_BUFFER_BIT);
-        route_to_component(state);
+        glfwSetKeyCallback(window, &key_callback);
+    
+        Context context;
+        while (!glfwWindowShouldClose(window)) {
+            auto start_time = glfwGetTime();
+            glfwGetFramebufferSize(window, &frame_buffer.width, &frame_buffer.height);
+            glViewport(0, 0, frame_buffer.width, frame_buffer.height);
+            glClear(GL_COLOR_BUFFER_BIT);
 
-        glfwSwapBuffers(window);
-        state.dt = glfwGetTime() - start_time;
+            context.frame_buffer = frame_buffer;
+            context.dt = dt;
+            router.get_current().run(context);
+
+            glfwSwapBuffers(window);
+            glfwPollEvents();
+            dt = glfwGetTime() - start_time;
+        }
     }
 }
 
-MyFirstComponent fc;
-
-void route_to_component(AppState state) {
-    fc.run(state);
+void main() {
+    ComponentRouter router = new ComponentRouter();
+    router.register("simple_triangle", new SimpleTriangle());
+    router.use_route("simple_triangle");
+    App app = new App(router);
+    app.run();
 }
 
 struct Vertex
@@ -82,7 +123,7 @@ struct Vertex
     float r, g, b;
 } 
 
-struct MyFirstComponent
+class SimpleTriangle : IComponent
 {
     bool is_init;
     GLint program;
@@ -111,7 +152,7 @@ struct MyFirstComponent
         Vertex(  0f,  0.6f, 0f, 0f, 1f )
     ];
 
-    void run(AppState state) {
+    void run(Context ctx) {
         if (!is_init) {
             is_init = true;
             GLuint vertex_buffer, vertex_shader, fragment_shader;
@@ -121,18 +162,22 @@ struct MyFirstComponent
             glGenBuffers(1, &vertex_buffer);
             glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
             glBufferData(GL_ARRAY_BUFFER, vertices.sizeof, cast(const void*)(vertices), GL_STATIC_DRAW);
+
             vertex_shader = glCreateShader(GL_VERTEX_SHADER);
             const char* vst = toStringz(vertex_shader_text);
             glShaderSource(vertex_shader, 1, &vst, null);
             glCompileShader(vertex_shader);
+
             fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
             const char* fst = toStringz(fragment_shader_text);
             glShaderSource(fragment_shader, 1, &fst, null);
             glCompileShader(fragment_shader);
+
             program = glCreateProgram();
             glAttachShader(program, vertex_shader);
             glAttachShader(program, fragment_shader);
             glLinkProgram(program);
+
             vpos_location = glGetAttribLocation(program, "vPos");
             vcol_location = glGetAttribLocation(program, "vCol");
             glEnableVertexAttribArray(vpos_location);
