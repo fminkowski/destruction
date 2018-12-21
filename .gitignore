@@ -12,3 +12,4 @@ destruction-test-*
 *.o
 *.obj
 *.lst
+bin/*
