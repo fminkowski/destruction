@@ -1,9 +1,11 @@
+module manager.app;
+
 import std.stdio;
 import std.conv;
 import derelict.glfw3.glfw3;
 import derelict.opengl;
-import router;
-import component;
+import manager.router;
+import manager.component;
 
 extern(C) 
 void error_callback(int error, const(char)* description) nothrow

@@ -1,4 +1,6 @@
-import component;
+module manager.router;
+
+import manager.component;
 
 interface IRouter {
     void register(string route_name, IComponent component);

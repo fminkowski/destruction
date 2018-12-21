@@ -1,3 +1,5 @@
+module manager.component;
+
 struct FrameBuffer {
     int width;
     int height; 

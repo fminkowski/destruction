@@ -1,5 +1,7 @@
+module component.simple_triangle;
+
 import derelict.opengl;
-import component;
+import manager.component;
 
 struct Vertex
 {
