@@ -46,10 +46,13 @@ class SimpleTriangle : IComponent
         program.describe_attrib("vPos", 2, 5, 0);
         program.describe_attrib("vCol", 3, 5, 2);
     }
-
+    double t = 0;
     void run(Context ctx) {
+        import std.math;
         glUseProgram(program.id);
-        glUniform1f(program.uniforms["scale"], 0.5);
+        t += ctx.dt;
+        auto c = cos(t);
+        glUniform1f(program.uniforms["scale"], 0.1 + c * c);
         glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 }

@@ -29,7 +29,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 class App {
     FrameBuffer frame_buffer;
     IRouter router;
-    double dt;
+    double dt = 0;
     bool component_initialized = false;
 
     this(IRouter router) {
