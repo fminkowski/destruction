@@ -1,0 +1,14 @@
+.dub
+docs.json
+__dummy.html
+docs/
+destruction.so
+destruction.dylib
+destruction.dll
+destruction.a
+destruction.lib
+destruction-test-*
+*.exe
+*.o
+*.obj
+*.lst
