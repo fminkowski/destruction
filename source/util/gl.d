@@ -7,13 +7,24 @@ struct GLProgram {
     GLuint[string] attribs;
     GLuint[string] uniforms;
 
-    void describe(string attrib, int size, int num_elements, int offset) {
+    void create_buffer(T)(T vertices) {
+        GLuint vertex_buffer;
+        glGenBuffers(1, &vertex_buffer);
+        glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+        glBufferData(GL_ARRAY_BUFFER,
+                     vertices.sizeof,
+                     cast(const void*)(vertices),
+                     GL_STATIC_DRAW);
+    }
+
+    void describe_attrib(string attrib, int size, int num_elements, int offset) {
         auto a = attribs[attrib];
         glEnableVertexAttribArray(a);
         glVertexAttribPointer(a, size,
                               GL_FLOAT, GL_FALSE,
                               cast(int)float.sizeof * num_elements,
                               cast(void*) (float.sizeof * offset));
+        glEnableVertexAttribArray(0);
     } 
 }
 

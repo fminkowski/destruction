@@ -36,22 +36,15 @@ class SimpleTriangle : IComponent
     ];
 
     void initialize(Context ctx) {
-        GLuint vertex_buffer, vertex_shader, fragment_shader;
-
-        glGenBuffers(1, &vertex_buffer);
-        glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-        glBufferData(GL_ARRAY_BUFFER,
-                     vertices.sizeof,
-                     cast(const void*)(vertices),
-                     GL_STATIC_DRAW);
-
         program = create_program(vertex_shader_text,
                                  fragment_shader_text,
                                  ["vPos", "vCol"],
                                  ["scale"]);
 
-        program.describe("vPos", 2, 5, 0);
-        program.describe("vCol", 3, 5, 2);
+        program.create_buffer!(Vertex[3])(vertices);
+
+        program.describe_attrib("vPos", 2, 5, 0);
+        program.describe_attrib("vCol", 3, 5, 2);
     }
 
     void run(Context ctx) {
