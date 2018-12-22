@@ -4,6 +4,7 @@ import manager.component;
 import component.simple_triangle;
 import component.textured_quad;
 import component.points;
+import component.moving_point;
 import util.ext_lib;
 
 
@@ -13,7 +14,8 @@ void main() {
     router.register("simple_triangle", new SimpleTriangle());
     router.register("textured_quad", new TexturedQuad());
     router.register("points", new Points());
-    router.use_route("points");
+    router.register("moving_point", new MovingPoint());
+    router.use_route("moving_point");
 
     auto app = new App(router);
     app.run();
