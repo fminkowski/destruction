@@ -98,6 +98,12 @@ struct GLProgram {
         glUseProgram(id);
     }
 
+    void draw_points(uint vao, int count) {
+        glBindVertexArray(vao);
+        glDrawArrays(GL_POINTS, 0, count);
+        glEnable(GL_PROGRAM_POINT_SIZE);
+    }
+
     void draw_array(uint vao, int count) {
         glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, count);
