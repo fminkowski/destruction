@@ -54,20 +54,21 @@ class TexturedQuad : IComponent
                                  ["texture1"]);
 
         float[vertex_count] vertices = [
-            // positions  // colors
              0.5f,  0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
              0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
             -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
             -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f
         ];
         uint[index_count] indices = [  
-            0, 1, 3, // first triangle
-            1, 2, 3  // second triangle
+            0, 1, 3,
+            1, 2, 3
         ];
+        texture.vao = program.create_indexed_buffer(vertices, indices);
+
         auto image = load_image("test.png");
         scope(exit) free_image(&image);
-        texture.vao = program.create_indexed_buffer(vertices, indices);
         texture.texture = program.load_texture(image);
+
         program.describe_attrib("vPos", 2, 7, 0);
         program.describe_attrib("vCol", 3, 7, 2);
         program.describe_attrib("aTexCoord", 2, 7, 5);
@@ -75,8 +76,6 @@ class TexturedQuad : IComponent
 
     void run(Context ctx) {
         program.use();
-
-
         program.draw_textured_elements(texture.texture, texture.vao, index_count);
     }
 }
