@@ -10,7 +10,6 @@ class Points : IComponent
     import std.math;
     GLProgram program;
     double t = 0;
-    const vertex_count = 15;
 
     string vertex_shader_text =
     "#version 330 core\n" ~
@@ -41,7 +40,7 @@ class Points : IComponent
                                  ["in_pos", "in_color"],
                                  ["point_size"]);
 
-        float[vertex_count] vertices =
+        float[15] vertices =
         [
             0.0,  0.0,  1, 0, 0,
             0.5,  0.5,  0, 1, 0,
