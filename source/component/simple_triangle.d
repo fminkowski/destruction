@@ -10,12 +10,13 @@ class SimpleTriangle : IComponent
     import std.math;
     GLProgram program;
     double t = 0;
-    const vertex_count = 3;
+    const vertex_count = 15;
 
     string vertex_shader_text =
-    "attribute vec3 vCol;\n" ~
-    "attribute vec2 vPos;\n" ~
-    "varying vec3 color;\n" ~
+    "#version 330 core\n" ~
+    "layout (location = 0) in vec2 vPos;\n" ~
+    "layout (location = 1) in vec3 vCol;\n" ~
+    "out vec3 color;\n" ~
     "uniform vec3 scale;\n" ~
     "void main()\n" ~
     "{\n" ~
@@ -24,26 +25,28 @@ class SimpleTriangle : IComponent
     "}\n";
 
     string fragment_shader_text =
-    "varying vec3 color;\n" ~
+    "#version 330 core\n" ~
+    "in vec3 color;\n" ~
+    "out vec4 FragColor;\n" ~
     "void main()\n" ~
     "{\n" ~
-    "    gl_FragColor = vec4(color, 1.0);\n" ~
+    "    FragColor = vec4(color, 1.0);\n" ~
     "}\n";
 
-
+    uint vao;
     void initialize(Context ctx) {
         program = create_program(vertex_shader_text,
                                  fragment_shader_text,
                                  ["vPos", "vCol"],
                                  ["scale"]);
 
-        Vertex2[vertex_count] vertices =
+        float[vertex_count] vertices =
         [
-            Vertex2( -0.6f, -0.4f, 1f, 0f, 0f ),
-            Vertex2(  0.6f, -0.4f, 0f, 1f, 0f ),
-            Vertex2(  0f,  0.6f, 0f, 0f, 1f )
+            -0.6f, -0.4f, 1f, 0f, 0f,
+             0.6f, -0.4f, 0f, 1f, 0f,
+             0.0f,  0.6f, 0f, 0f, 1f
         ];
-        program.create_buffer!(Vertex2[vertex_count])(vertices);
+        vao = program.create_buffer(vertices);
 
         program.describe_attrib("vPos", 2, 5, 0);
         program.describe_attrib("vCol", 3, 5, 2);
@@ -58,7 +61,7 @@ class SimpleTriangle : IComponent
         float[] v = [c*c, s*s, c*c];
         program.set_uniform("scale", v);
 
-        program.draw(vertex_count);
+        program.draw_array(vao, vertex_count);
     }
 }
 

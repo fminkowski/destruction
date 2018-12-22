@@ -9,14 +9,23 @@ struct GLProgram {
     GLuint[string] attribs;
     GLint[string] uniforms;
 
-    void create_buffer(T)(T vertices) {
-        GLuint vertex_buffer;
-        glGenBuffers(1, &vertex_buffer);
-        glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-        glBufferData(GL_ARRAY_BUFFER,
-                     vertices.sizeof,
-                     cast(const void*)(vertices),
-                     GL_STATIC_DRAW);
+    uint create_buffer(T)(T vertices) {
+        //GLuint vertex_buffer;
+        //glGenBuffers(1, &vertex_buffer);
+        //glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+        //glBufferData(GL_ARRAY_BUFFER,
+                     //vertices.sizeof,
+                     //cast(const void*)(vertices),
+                     //GL_STATIC_DRAW);
+        uint vbo, vao;
+        glGenVertexArrays(1, &vao);
+        glGenBuffers(1, &vbo);
+        glBindVertexArray(vao);
+
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, vertices.sizeof, vertices.ptr, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        return vao;
     }
 
     uint create_indexed_buffer(T1, T2)(T1 vertices, T2 indices) {
@@ -32,6 +41,7 @@ struct GLProgram {
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.sizeof, indices.ptr, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
         return vao;
     }
 
@@ -88,7 +98,8 @@ struct GLProgram {
         glUseProgram(id);
     }
 
-    void draw(int count) {
+    void draw_array(uint vao, int count) {
+        glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, count);
     }
 

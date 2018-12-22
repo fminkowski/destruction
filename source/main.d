@@ -11,7 +11,7 @@ void main() {
     auto router = new ComponentRouter();
     router.register("simple_triangle", new SimpleTriangle());
     router.register("textured_quad", new TexturedQuad());
-    router.use_route("textured_quad");
+    router.use_route("simple_triangle");
 
     auto app = new App(router);
     app.run();
