@@ -37,13 +37,13 @@ class SimpleTriangle : IComponent
                                  ["vPos", "vCol"],
                                  ["scale"]);
 
-        Vertex[vertex_count] vertices =
+        Vertex2[vertex_count] vertices =
         [
-            Vertex( -0.6f, -0.4f, 1f, 0f, 0f ),
-            Vertex(  0.6f, -0.4f, 0f, 1f, 0f ),
-            Vertex(  0f,  0.6f, 0f, 0f, 1f )
+            Vertex2( -0.6f, -0.4f, 1f, 0f, 0f ),
+            Vertex2(  0.6f, -0.4f, 0f, 1f, 0f ),
+            Vertex2(  0f,  0.6f, 0f, 0f, 1f )
         ];
-        program.create_buffer!(Vertex[vertex_count])(vertices);
+        program.create_buffer!(Vertex2[vertex_count])(vertices);
 
         program.describe_attrib("vPos", 2, 5, 0);
         program.describe_attrib("vCol", 3, 5, 2);

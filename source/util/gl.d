@@ -1,6 +1,8 @@
 module util.gl;
 
 import derelict.opengl;
+import util.ext_lib;
+
 
 struct GLProgram {
     GLint id;
@@ -15,6 +17,44 @@ struct GLProgram {
                      vertices.sizeof,
                      cast(const void*)(vertices),
                      GL_STATIC_DRAW);
+    }
+
+    uint create_indexed_buffer(T1, T2)(T1 vertices, T2 indices) {
+        uint VBO, VAO, EBO;
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+        glGenBuffers(1, &EBO);
+
+        glBindVertexArray(VAO);
+        
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, vertices.sizeof, vertices.ptr, GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.sizeof, indices.ptr, GL_STATIC_DRAW);
+        return VAO;
+    }
+
+    uint load_texture(Image image) {
+        uint texture;
+        glGenTextures(1, &texture);
+        // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+        glBindTexture(GL_TEXTURE_2D, texture); 
+        // set the texture wrapping parameters
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        // set texture filtering parameters
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        if (image.data)
+        {
+            auto format = get_gl_format(image);
+            glTexImage2D(GL_TEXTURE_2D, 0, format,
+                         image.w, image.h, 0, format,
+                         GL_UNSIGNED_BYTE, image.data);
+            glGenerateMipmap(GL_TEXTURE_2D);
+        }
+        return texture;
     }
 
     void describe_attrib(string attrib, int size, int num_elements, int offset) {
@@ -50,6 +90,17 @@ struct GLProgram {
 
     void draw(int count) {
         glDrawArrays(GL_TRIANGLES, 0, count);
+    }
+
+    void draw_elements(uint vao, int index_count) {
+        glBindVertexArray(vao);
+        glDrawElements(GL_TRIANGLES, index_count,
+                       GL_UNSIGNED_INT, null);
+    }
+
+    void draw_textured_elements(uint texture, uint vao, int index_count) {
+        glBindTexture(GL_TEXTURE_2D, texture);
+        draw_elements(vao, index_count);
     }
 }
 
@@ -104,4 +155,13 @@ GLProgram create_program(string vertex_shader_text,
         result.uniforms[u] = glGetUniformLocation(program_id, tmp);
     }
     return result;
+}
+
+GLenum get_gl_format(Image image) {
+    switch(image.c) {
+    case 1: return GL_RED;
+    case 2: return GL_RG;
+    case 3: return GL_RGB;
+    default: return GL_RGBA;
+    }
 }
