@@ -83,7 +83,7 @@ struct Mat4(T) {
         auto n = 0;
         foreach (i; 0..4) {
             foreach (j; 0..4) {
-                r[n] = e[j][i];
+                r[n] = e[i][j];
                 n++;
             }
         }

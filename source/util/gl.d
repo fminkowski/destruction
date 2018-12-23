@@ -85,7 +85,7 @@ struct GLProgram {
             glUniform4f(id, values[0], values[1], values[2], values[3]);
             break;
         default:
-            glUniformMatrix4fv(id, 1, GL_FALSE, values.ptr);
+            glUniformMatrix4fv(id, 1, GL_TRUE, values.ptr);
             break;
         }
     }
