@@ -81,8 +81,12 @@ struct GLProgram {
         case 3:
             glUniform3f(id, values[0], values[1], values[2]);
             break;
-        default:
+        case 4:
             glUniform4f(id, values[0], values[1], values[2], values[3]);
+            break;
+        default:
+            glUniformMatrix4fv(id, 1, GL_FALSE, values.ptr);
+            break;
         }
     }
 

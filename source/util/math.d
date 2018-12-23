@@ -56,6 +56,18 @@ struct Mat4(T) {
         }
         return r;
     }
+
+    float[16] to_gl() {
+        float[16] r;
+        auto n = 0;
+        foreach (i; 0..4) {
+            foreach (j; 0..4) {
+                r[n] = e[j][i];
+                n++;
+            }
+        }
+        return r;
+    }
 };
 
 unittest {

@@ -17,7 +17,7 @@ void main() {
     router.register("points", new Points());
     router.register("moving_point", new MovingPoint());
     router.register("moving_points", new MovingPoints());
-    router.use_route("moving_points");
+    router.use_route("moving_point");
 
     auto app = new App(router);
     app.run();

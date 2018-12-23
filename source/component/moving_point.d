@@ -18,10 +18,10 @@ class MovingPoint : IComponent
     "layout (location = 1) in vec3 in_color;\n" ~
     "out vec3 color;\n" ~
     "uniform float point_size;\n" ~
-    "uniform vec2 position;\n" ~
+    "uniform mat4 tran;\n" ~
     "void main()\n" ~
     "{\n" ~
-    "   gl_Position = vec4(in_pos + position, 0, 1.0);\n" ~
+    "   gl_Position = tran * vec4(in_pos, 0, 1.0);\n" ~
     "   gl_PointSize = point_size;\n" ~
     "   color = in_color;\n" ~
     "}\n";
@@ -39,7 +39,7 @@ class MovingPoint : IComponent
         program = create_program(vertex_shader_text,
                                  fragment_shader_text,
                                  ["in_pos", "in_color"],
-                                 ["point_size", "position"]);
+                                 ["point_size", "tran"]);
 
         float[5] vertices =
         [
@@ -54,10 +54,10 @@ class MovingPoint : IComponent
     void run(Context ctx) {
         program.use();
         t += ctx.dt;
-        auto size = 10;
-        float[2] position = [0.5f * cos(t), 0];
-        program.set_uniform("point_size", [size]);
-        program.set_uniform("position", position);
+        auto e = eye4!float();
+        auto tran = translate(e, V4!float(0.5f * cos(t), 0, 0, 1)).to_gl;
+        program.set_uniform("point_size", [10]);
+        program.set_uniform("tran", tran);
         program.draw_points(vao, 1);
     }
 }
