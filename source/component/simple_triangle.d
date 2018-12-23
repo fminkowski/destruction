@@ -48,8 +48,8 @@ class SimpleTriangle : IComponent
         ];
         vao = program.create_buffer(vertices);
 
-        program.describe_attrib("vPos", 2, 5, 0);
-        program.describe_attrib("vCol", 3, 5, 2);
+        program.describe_attrib(vao, "vPos", 2, 5, 0);
+        program.describe_attrib(vao, "vCol", 3, 5, 2);
     }
 
     void run(Context ctx) {

@@ -1,16 +1,18 @@
-module component.moving_point;
+module component.moving_points;
 
 import derelict.opengl;
 import manager.component;
 import util.math;
 import util.gl;
 
-class MovingPoint : IComponent
+class MovingPoints : IComponent
 {
     import std.math;
     GLProgram program;
     double t = 0;
-    uint vao;
+    uint point1_vao;
+    uint point2_vao;
+    uint point3_vao;
 
     string vertex_shader_text =
     "#version 330 core\n" ~
@@ -45,10 +47,18 @@ class MovingPoint : IComponent
         [
             0.0,  0.0,  1, 0, 0
         ];
-        vao = program.create_buffer(vertices);
 
-        program.describe_attrib(vao, "in_pos", 2, 5, 0);
-        program.describe_attrib(vao, "in_color", 3, 5, 2);
+        point1_vao = program.create_buffer(vertices);
+        program.describe_attrib(point1_vao, "in_pos",  2, 5, 0);
+        program.describe_attrib(point1_vao, "in_color", 3, 5, 2);
+
+        point2_vao = program.create_buffer(vertices);
+        program.describe_attrib(point2_vao, "in_pos", 2, 5, 0);
+        program.describe_attrib(point2_vao, "in_color", 3, 5, 2);
+
+        point3_vao = program.create_buffer(vertices);
+        program.describe_attrib(point3_vao, "in_pos", 2, 5, 0);
+        program.describe_attrib(point3_vao, "in_color", 3, 5, 2);
     }
     
     void run(Context ctx) {
@@ -57,8 +67,17 @@ class MovingPoint : IComponent
         auto size = 10;
         float[2] position = [0.5f * cos(t), 0];
         program.set_uniform("point_size", [size]);
+
         program.set_uniform("position", position);
-        program.draw_points(vao, 1);
+        program.draw_points(point1_vao, 1);
+
+        position = [0.25f * cos(t), 0.25];
+        program.set_uniform("position", position);
+        program.draw_points(point2_vao, 1);
+
+        position = [0.05f * cos(t), 0.5];
+        program.set_uniform("position", position);
+        program.draw_points(point3_vao, 1);
     }
 }
 

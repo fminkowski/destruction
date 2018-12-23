@@ -10,13 +10,6 @@ struct GLProgram {
     GLint[string] uniforms;
 
     uint create_buffer(T)(T vertices) {
-        //GLuint vertex_buffer;
-        //glGenBuffers(1, &vertex_buffer);
-        //glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-        //glBufferData(GL_ARRAY_BUFFER,
-                     //vertices.sizeof,
-                     //cast(const void*)(vertices),
-                     //GL_STATIC_DRAW);
         uint vbo, vao;
         glGenVertexArrays(1, &vao);
         glGenBuffers(1, &vbo);
@@ -24,7 +17,6 @@ struct GLProgram {
 
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, vertices.sizeof, vertices.ptr, GL_STATIC_DRAW);
-        glEnableVertexAttribArray(0);
         return vao;
     }
 
@@ -67,14 +59,14 @@ struct GLProgram {
         return texture;
     }
 
-    void describe_attrib(string attrib, int size, int num_elements, int offset) {
+    void describe_attrib(uint vao, string attrib, int size, int num_elements, int offset) {
         auto a = attribs[attrib];
-        glEnableVertexAttribArray(a);
+        glBindVertexArray(vao);
         glVertexAttribPointer(a, size,
                               GL_FLOAT, GL_FALSE,
                               cast(int)float.sizeof * num_elements,
                               cast(void*) (float.sizeof * offset));
-        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(a);
     } 
 
     void set_uniform(string uniform, float[] values) {
@@ -100,8 +92,8 @@ struct GLProgram {
 
     void draw_points(uint vao, int count) {
         glBindVertexArray(vao);
-        glDrawArrays(GL_POINTS, 0, count);
         glEnable(GL_PROGRAM_POINT_SIZE);
+        glDrawArrays(GL_POINTS, 0, count);
     }
 
     void draw_array(uint vao, int count) {

@@ -48,8 +48,8 @@ class Points : IComponent
         ];
         vao = program.create_buffer(vertices);
 
-        program.describe_attrib("in_pos", 2, 5, 0);
-        program.describe_attrib("in_color", 3, 5, 2);
+        program.describe_attrib(vao, "in_pos", 2, 5, 0);
+        program.describe_attrib(vao, "in_color", 3, 5, 2);
     }
     
     void run(Context ctx) {

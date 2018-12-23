@@ -63,15 +63,16 @@ class TexturedQuad : IComponent
             0, 1, 3,
             1, 2, 3
         ];
-        texture.vao = program.create_indexed_buffer(vertices, indices);
+        auto vao = program.create_indexed_buffer(vertices, indices);
+        texture.vao = vao;
 
         auto image = load_image("test.png");
         scope(exit) free_image(&image);
         texture.texture = program.load_texture(image);
 
-        program.describe_attrib("vPos", 2, 7, 0);
-        program.describe_attrib("vCol", 3, 7, 2);
-        program.describe_attrib("aTexCoord", 2, 7, 5);
+        program.describe_attrib(vao, "vPos", 2, 7, 0);
+        program.describe_attrib(vao, "vCol", 3, 7, 2);
+        program.describe_attrib(vao, "aTexCoord", 2, 7, 5);
     }
 
     void run(Context ctx) {
