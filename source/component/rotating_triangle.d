@@ -60,8 +60,6 @@ class RotatingTriangle : IComponent
         auto m = q.rotation_matrix!double;
         program.set_uniform("rot", m.to_gl);
 
-        import std.stdio;
-        writeln(m.e.ptr);
         program.draw_array(vao, vertex_count);
     }
 }
