@@ -33,12 +33,24 @@ struct V3(T) {
         return V3!T(vec_sub!T(this.e, v.e));
     }
 
+    V3!T neg(T)() {
+        return V3!T(vec_neg!T(this.e));
+    }
+
     T dot(T)(V3!T v) {
         return vec_dot!T(this.e, v.e);
     }
 
     V3!T norm(T)() {
         return V3!T(vec_norm(this.e));
+    }
+
+    V3!T cross(T)(V3!T v) {
+        V3!T r;
+        r.x = y * v.z - z * v.y;
+        r.y = z * v.x - x * v.z;
+        r.z = x * v.y - y * v.x;
+        return r;
     }
 }
 
@@ -56,6 +68,10 @@ struct V4(T) {
 
     V4!T sub(T)(V4!T v) {
         return V4!T(vec_sub!T(this.e, v.e));
+    }
+
+    V4!T neg(T)() {
+        return V4!T(vec_neg!T(this.e));
     }
 
     T dot(T)(V4!T v) {
@@ -87,6 +103,14 @@ T vec_dot(T)(T[] v1, T[] v2) {
     T r = 0;
     foreach (i; 0..v1.length) {
         r += (v1[i] + v2[i]);
+    }
+    return r;
+}
+
+T[] vec_neg(T)(T[] v) {
+    T[] r;
+    foreach (i; 0..v1.length) {
+        r ~= -v1[i];
     }
     return r;
 }
@@ -208,6 +232,26 @@ Mat4!T translate(T)(Mat4!T m, V4!T v) {
     m2.e[1][3] = v.y;
     m2.e[2][3] = v.z;
     return m2;
+}
+
+Mat4!T look_at(T)(V3!T p, V3!T target, V3!T up) {
+    auto e = eye4!T();
+    auto forward = p.sub!T(target).norm!T;
+    auto right = forward.cross!T(up).norm!T;
+    e.e[0][0] = right.x;
+    e.e[0][1] = right.y;
+    e.e[0][2] = right.z;
+    e.e[1][0] = up.x;
+    e.e[1][1] = up.y;
+    e.e[1][2] = up.z;
+    e.e[2][0] = forward.x;
+    e.e[2][1] = forward.y;
+    e.e[2][2] = forward.z;
+    
+    e.e[3][0] = p.x;
+    e.e[3][1] = p.y;
+    e.e[3][2] = p.z;
+    return e;
 }
 
 unittest {

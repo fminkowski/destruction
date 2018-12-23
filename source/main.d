@@ -8,6 +8,7 @@ import component.moving_point;
 import component.moving_points;
 import component.rotating_triangle;
 import component.moving_rotating_triangle;
+import component.look_at_moving_rotating_triangle;
 import util.ext_lib;
 
 
@@ -20,7 +21,8 @@ void main() {
     router.register("moving_point", new MovingPoint());
     router.register("moving_points", new MovingPoints());
     router.register("moving_rotating_triangle", new MovingRotatingTriangle());
-    router.use_route("moving_rotating_triangle");
+    router.register("look_at_moving_rotating_triangle", new LookAtMovingRotatingTriangle());
+    router.use_route("look_at_moving_rotating_triangle");
 
     auto app = new App(router);
     app.run();
