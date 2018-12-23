@@ -12,6 +12,34 @@ struct V3(T) {
         }
         T[3] e;
     }
+    
+    this(T x, T y, T z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    this(T[] v) {
+        x = v[0];
+        y = v[1];
+        z = v[2];
+    }
+
+    V3!T add(T)(V3!T v) {
+        return V3!T(vec_add!T(this.e, v.e));
+    }
+
+    V3!T sub(T)(V3!T v) {
+        return V3!T(vec_sub!T(this.e, v.e));
+    }
+
+    T dot(T)(V3!T v) {
+        return vec_dot!T(this.e, v.e);
+    }
+
+    V3!T norm(T)() {
+        return V3!T(vec_norm(this.e));
+    }
 }
 
 struct V4(T) {
@@ -21,7 +49,61 @@ struct V4(T) {
         }
         T[4] e;
     }
+
+    V4!T add(T)(V4!T v) {
+        return V4!T(vec_add!T(this.e, v.e));
+    }
+
+    V4!T sub(T)(V4!T v) {
+        return V4!T(vec_sub!T(this.e, v.e));
+    }
+
+    T dot(T)(V4!T v) {
+        return vec_dot(this.e, v.e);
+    }
+
+    V4!T norm(T)() {
+        return V4!T(vec_norm(this.e));
+    }
 }
+
+T[] vec_sub(T)(T[] v1, T[] v2) {
+    T[] r;
+    foreach (i; 0..v1.length) {
+        r ~= v1[i] - v2[i];
+    }
+    return r;
+}
+
+T[] vec_add(T)(T[] v1, T[] v2) {
+    T[] r;
+    foreach (i; 0..v1.length) {
+        r ~= v1[i] + v2[i];
+    }
+    return r;
+}
+
+T vec_dot(T)(T[] v1, T[] v2) {
+    T r = 0;
+    foreach (i; 0..v1.length) {
+        r += (v1[i] + v2[i]);
+    }
+    return r;
+}
+
+T[] vec_norm(T)(T[] v) {
+    T length = 0;
+    foreach (i; 0..v.length) {
+        length += v[i] * v[i];
+    }
+    T denom = sqrt(length);
+    T[] r;
+    foreach (i; 0..v.length) {
+        r ~= v[i] / denom;
+    }
+    return r;
+}
+
 
 struct Mat4(T) {
     T[4][4] e;
@@ -233,16 +315,18 @@ struct Quat(T) {
         return w * q2.w + x * q2.x + y * q2.y + z * q2.z;
     }
 
-    norm norm(T)()
+    Quad norm(T)()
     {
+        Quad q;
         T length = sqrt(this.dot(this));
         if (length > 0.0)
         {
-            w /= length;
-            x /= length;
-            y /= length;
-            z /= length;
+            q.w = w / length;
+            q.x = x / length;
+            q.y = y / length;
+            q.z = z / length;
         }
+        return q;
     }
 
     V3!T apply_rotation_to(T)(V3!T v)
