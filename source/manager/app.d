@@ -49,7 +49,7 @@ class App {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        GLFWwindow* window = glfwCreateWindow(640, 480, "Destruction", null, null);
+        GLFWwindow* window = glfwCreateWindow(640, 640, "Destruction", null, null);
         if (!window)
         {
             writeln("could not create window");
