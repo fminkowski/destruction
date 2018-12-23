@@ -13,3 +13,4 @@ destruction-test-*
 *.obj
 *.lst
 bin/*
+.DS_Store
