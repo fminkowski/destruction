@@ -5,6 +5,46 @@ import std.range;
 import std.math;
 
 
+struct V2(T) {
+    union {
+        struct {
+            T x, y;
+        }
+        T[2] e;
+    }
+    
+    this(T x, T y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    this(T[] v) {
+        x = v[0];
+        y = v[1];
+    }
+
+    V2!T add(T)(V2!T v) {
+        return V2!T(vec_add!T(this.e, v.e));
+    }
+
+    V2!T sub(T)(V2!T v) {
+        return V2!T(vec_sub!T(this.e, v.e));
+    }
+
+    V2!T neg(T)() {
+        return V2!T(vec_neg!T(this.e));
+    }
+
+    T dot(T)(V2!T v) {
+        return vec_dot!T(this.e, v.e);
+    }
+
+    V2!T norm(T)() {
+        return V2!T(vec_norm(this.e));
+    }
+
+}
+
 struct V3(T) {
     union {
         struct {

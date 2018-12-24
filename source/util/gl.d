@@ -166,6 +166,8 @@ GLProgram create_program(string vertex_shader_text,
         const char* tmp = toStringz(u);
         result.uniforms[u] = glGetUniformLocation(program_id, tmp);
     }
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable( GL_BLEND );
     return result;
 }
 
