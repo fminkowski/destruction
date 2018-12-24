@@ -1,4 +1,4 @@
-module component.particles;
+module component.particle.simple;
 
 import derelict.opengl;
 import manager.component;
@@ -11,7 +11,7 @@ struct Particle {
     float life;
 }
 
-class Particles : IComponent
+class SimpleParticle : IComponent
 {
     import std.math;
     GLProgram program;

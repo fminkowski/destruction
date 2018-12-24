@@ -9,7 +9,7 @@ import component.moving_points;
 import component.rotating_triangle;
 import component.moving_rotating_triangle;
 import component.look_at_moving_rotating_triangle;
-import component.particles;
+import component.particle.simple;
 import util.ext_lib;
 
 
@@ -23,8 +23,8 @@ void main() {
     router.register("moving_points", new MovingPoints());
     router.register("moving_rotating_triangle", new MovingRotatingTriangle());
     router.register("look_at_moving_rotating_triangle", new LookAtMovingRotatingTriangle());
-    router.register("particles", new Particles());
-    router.use_route("particles");
+    router.register("simple_particle", new SimpleParticle());
+    router.use_route("simple_particle");
 
     auto app = new App(router);
     app.run();
