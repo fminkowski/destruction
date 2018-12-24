@@ -7,7 +7,7 @@ import util.gl;
 
 struct Particle {
     V2!float p;
-    V2!float d;
+    V2!float v;
     float life;
 }
 
@@ -74,10 +74,14 @@ class Particles : IComponent
         int index = 0;
         float offset = 0.1f;
         foreach (ref p; particles) {
-            p.p.x += 0.0001 * t * p.d.x;
-            p.p.y += 0.0001 * t * p.d.y;
+            p.p.x += t * p.v.x;
+            p.p.y += t * p.v.y;
             program.set_uniform("offset", p.p.e);
-            program.set_uniform("u_color", [0.75, 0.3, 0.1, 1 - t/p.life]);
+
+            auto f = p.life/5.0;
+            p.life += ctx.dt;
+            auto color = lerp!float([.8, .8, .8, 1], [0.75, 0.3, 0.1, 0.75], f);
+            program.set_uniform("u_color", color);
             program.draw_array(vao, 6);
         } 
     }
@@ -91,10 +95,9 @@ Particle[] build_particles(int count) {
         Particle p;
         p.p.x = uniform(-spread, spread) / 50f;
         p.p.y = uniform(-spread, spread) / 50f;
-        p.d.x = uniform(-10, 10) / 75f;
-        p.d.y = uniform(-10, 10) / 100f;
-        p.d = p.d.norm!float;
-        p.life = uniform(2, 10);
+        p.v.x = uniform(-10, 10) / 10000f;
+        p.v.y = uniform(-10, 10) / 10000f;
+        p.life = uniform(4, 6);
         particles ~= p;
     }
     return particles;

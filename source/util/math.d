@@ -454,3 +454,23 @@ struct Quat(T) {
 	//return V1 * cos(Theta) + V3 * sin(Theta);
 //}
 
+T lerp(T)(T v0, T v1, T t) {
+  return (1 - t) * v0 + t * v1;
+}
+
+T[] lerp(T)(T[] v1, T v2, T t) {
+    T[] lerped;
+    foreach (v; v1) {
+       lerped ~= lerp!T(v, v2, t); 
+    }
+    return lerped;
+}
+
+T[] lerp(T)(T[] v1, T[] v2, T t) {
+    T[] lerped;
+    foreach (i, v; v1) {
+       lerped ~= lerp!T(v, v2[i], t); 
+    }
+    return lerped;
+}
+
