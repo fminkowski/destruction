@@ -10,6 +10,7 @@ import component.rotating_triangle;
 import component.moving_rotating_triangle;
 import component.look_at_moving_rotating_triangle;
 import component.particle.simple;
+import component.particle.regenerating;
 import util.ext_lib;
 
 
@@ -24,7 +25,8 @@ void main() {
     router.register("moving_rotating_triangle", new MovingRotatingTriangle());
     router.register("look_at_moving_rotating_triangle", new LookAtMovingRotatingTriangle());
     router.register("simple_particle", new SimpleParticle());
-    router.use_route("simple_particle");
+    router.register("regenerating_particles", new RegeneratingParticles());
+    router.use_route("regenerating_particles");
 
     auto app = new App(router);
     app.run();
