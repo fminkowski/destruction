@@ -1,5 +1,7 @@
 module manager.component;
 
+import util.font;
+
 struct FrameBuffer {
     int width;
     int height; 
@@ -8,6 +10,7 @@ struct FrameBuffer {
 struct Context {
     FrameBuffer frame_buffer;
     double dt;
+    FontRenderer* font;
 }
 
 interface IComponent {
