@@ -28,7 +28,8 @@ void main() {
     router.register("simple_particle", new SimpleParticle());
     router.register("regenerating_particles", new RegeneratingParticles());
     router.register("text", new Text());
-    router.use_route("text");
+
+    router.use_route("textured_quad");
 
     auto app = new App(router);
     app.run();

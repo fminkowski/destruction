@@ -104,7 +104,7 @@ class App {
     void wait_rest_of_frame(double start_time) {
         dt = glfwGetTime() - start_time;
         const frame_time = 1.0 / frame_rate;
-        while ( dt <= frame_time) {
+        while ( dt < frame_time) {
             dt = glfwGetTime() - start_time;
         }
     }
