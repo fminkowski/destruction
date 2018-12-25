@@ -67,7 +67,6 @@ class TexturedQuad : IComponent
         auto vao = texture.b.vao;
 
         auto image = load_image("test.png");
-        scope(exit) free_image(&image);
         texture.texture = program.load_texture(image);
 
         program.describe_attrib(vao, "vPos", 2, 7, 0);

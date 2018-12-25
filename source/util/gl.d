@@ -49,6 +49,12 @@ struct GLProgram {
         return b;
     }
 
+    void stream_to_buffer(T1)(uint vbo, T1[] vertices) {
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, vertices.length * float.sizeof,
+                     vertices.ptr, GL_DYNAMIC_DRAW);
+    }
+
     uint load_texture(Image image) {
         uint texture;
         glGenTextures(1, &texture);
