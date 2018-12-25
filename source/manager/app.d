@@ -8,6 +8,7 @@ import manager.router;
 import manager.component;
 import util.font;
 import std.stdio;
+import std.conv;
 
 
 extern(C) 
@@ -30,6 +31,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 
 class App {
+    const frame_rate = 60.0;
     GLFWwindow* window;
     FrameBuffer frame_buffer;
     IRouter router;
@@ -83,6 +85,7 @@ class App {
             context.frame_buffer = frame_buffer;
             context.dt = dt;
             context.font = &font_renderer;
+            font_renderer.draw("dt: " ~ to!string(dt * 1000), -320, 320 - font.line_gap);            
             auto component = router.get_current();
             if (!component_initialized) {
                 component_initialized = true;
@@ -92,9 +95,17 @@ class App {
 
             glfwSwapBuffers(window);
             glfwPollEvents();
-            dt = glfwGetTime() - start_time;
+            wait_rest_of_frame(start_time);
         }
         glfwDestroyWindow(window);
         glfwTerminate();
+    }
+
+    void wait_rest_of_frame(double start_time) {
+        dt = glfwGetTime() - start_time;
+        const frame_time = 1.0 / frame_rate;
+        while ( dt <= frame_time) {
+            dt = glfwGetTime() - start_time;
+        }
     }
 }

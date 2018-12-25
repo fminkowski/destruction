@@ -6,7 +6,7 @@ import util.ext_lib;
 
 struct Font {
     private {
-    float _font_size = 32f;
+    float _font_size;
     Image _img;
     stbtt_bakedchar[96] _character_data;
     stbtt_fontinfo _font_info;
@@ -20,7 +20,8 @@ struct Font {
         return _font_size;
     }
 
-    void init(string font_file = "/System/Library/Fonts/Keyboard.ttf") {
+    void init(string font_file = "/Library/Fonts/Tahoma.ttf", float font_size = 20.0) {
+        this._font_size = font_size;
         import std.file;
         int buffer_width = 512;
         int buffer_height = 512;
