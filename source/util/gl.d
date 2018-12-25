@@ -40,6 +40,7 @@ struct GLProgram {
     uint load_texture(Image image) {
         uint texture;
         glGenTextures(1, &texture);
+        glActiveTexture(GL_TEXTURE0);
         // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
         glBindTexture(GL_TEXTURE_2D, texture); 
         // set the texture wrapping parameters
@@ -51,14 +52,15 @@ struct GLProgram {
         if (image.data) {
             auto format = get_gl_format(image);
             glTexImage2D(GL_TEXTURE_2D, 0, format,
-                         image.w, image.h, 0, format,
+                         image.w, image.h, 0, image.c == 1 ? GL_RED : format,
                          GL_UNSIGNED_BYTE, image.data);
             glGenerateMipmap(GL_TEXTURE_2D);
         }
         return texture;
     }
 
-    void describe_attrib(uint vao, string attrib, int size, int num_elements, int offset) {
+    void describe_attrib(uint vao, string attrib,
+                         int size, int num_elements, int offset) {
         auto a = attribs[attrib];
         glBindVertexArray(vao);
         glVertexAttribPointer(a, size,
@@ -173,7 +175,7 @@ GLProgram create_program(string vertex_shader_text,
 
 GLenum get_gl_format(Image image) {
     switch(image.c) {
-    case 1: return GL_RED;
+    case 1: return GL_R8;
     case 2: return GL_RG;
     case 3: return GL_RGB;
     default: return GL_RGBA;

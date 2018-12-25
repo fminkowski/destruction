@@ -11,6 +11,7 @@ import component.moving_rotating_triangle;
 import component.look_at_moving_rotating_triangle;
 import component.particle.simple;
 import component.particle.regenerating;
+import component.ui.text;
 import util.ext_lib;
 
 
@@ -26,7 +27,8 @@ void main() {
     router.register("look_at_moving_rotating_triangle", new LookAtMovingRotatingTriangle());
     router.register("simple_particle", new SimpleParticle());
     router.register("regenerating_particles", new RegeneratingParticles());
-    router.use_route("regenerating_particles");
+    router.register("text", new Text());
+    router.use_route("textured_quad");
 
     auto app = new App(router);
     app.run();

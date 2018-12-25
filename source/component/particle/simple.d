@@ -40,7 +40,6 @@ class SimpleParticle : IComponent
     "}\n";
 
     uint vao;
-    uint instance_vao;
     Particle[] particles;
 
     void initialize(Context ctx) {
@@ -69,8 +68,6 @@ class SimpleParticle : IComponent
     
     void run(Context ctx) {
         program.use();
-        int index = 0;
-        float offset = 0.1f;
         foreach (ref p; particles) {
             p.p.x += ctx.dt * p.v.x;
             p.p.y += ctx.dt * p.v.y;
