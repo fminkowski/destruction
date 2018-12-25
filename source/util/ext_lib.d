@@ -30,6 +30,7 @@ stbi_flip_vertically_on_write_t stbi_flip_vertically_on_write;
 
 struct Image {
     ubyte* data;
+    ubyte[] buffer;
     int w;
     int h;
     int c;
@@ -51,6 +52,13 @@ struct Image {
                 data[i2] = tmp;
             }
         }
+    }
+
+    void copy(size_t w, size_t h, ubyte* buffer) {
+        for (auto i = 0; i < w * h * c; i++) {
+           this.buffer[i] = buffer[i]; 
+        }
+        data = this.buffer.ptr;
     }
 }
 

@@ -9,8 +9,8 @@ import util.ext_lib;
 import std.stdio; 
 
 struct Texture {
-    uint vao;
     uint texture;
+    GLBuffer b;
 }
 
 class Text : IComponent
@@ -64,7 +64,6 @@ class Text : IComponent
         font_image.w = buffer_width;
         font_image.h = buffer_height;
         font_image.c = 1;
-        font_image.flip;
     }
 
     float line_gap() {
@@ -81,61 +80,69 @@ class Text : IComponent
                                  fragment_shader_text,
                                  ["in_pos", "in_texture"]);
 
-        float[16] vertices = [
-             0.5f,  0.5f, 1.0f, 1.0f,
-             0.5f, -0.5f, 1.0f, 0.0f,
-            -0.5f, -0.5f, 0.0f, 0.0f,
-            -0.5f,  0.5f, 0.0f, 1.0f
-        ];
-        uint[6] indices = [  
-            0, 1, 3,
-            1, 2, 3
-        ];
-        texture.vao = program.create_indexed_buffer(vertices, indices);
+        texture.b = program.make_buffer();
         texture.texture = program.load_texture(font_image);
-        font_image.write;
 
-        program.describe_attrib(texture.vao, "in_pos", 2, 4, 0);
-        program.describe_attrib(texture.vao, "in_texture", 2, 4, 2);
+        program.describe_attrib(texture.b.vao, "in_pos", 2, 4, 0);
+        program.describe_attrib(texture.b.vao, "in_texture", 2, 4, 2);
     }
     
     void run(Context ctx) {
         program.use();
-        program.draw_textured_elements(texture.vao, texture.texture, 6);
+        glBindVertexArray(texture.b.vao);
+        glBindTexture(GL_TEXTURE_2D, texture.texture);
+        draw_text("This is some awesome text", 0, 0);
     }
 
     import std.encoding;
     struct Point {
         float x, y, s, t;
     }
-    Point[] draw_text(string text, float x, float y) {
+    void draw_text(string text, float x, float y) {
 
-        const int vertices_per_quad = 6;
-        auto vertices = new Point[text.length];
+        float[] vertices;
         
         //make the origin the top-left of the window
         float x_offset = 0;
-        float y_offset = line_gap();
+        float y_offset = 0;//line_gap();
 
         int vertex_count = 0;
         foreach (c; text.codePoints) {
-            writeln(c);
             stbtt_aligned_quad quad;
-            stbtt_GetBakedQuad(cdata.ptr, 512, 512, c-32, &x, &y, &quad, 1);//1=opengl & d3d10+,0=d3d9
+            stbtt_GetBakedQuad(cdata.ptr, 512, 512,
+                               cast(char)c-32, &x, &y, &quad, 1);//1=opengl & d3d10+,0=d3d9
 
-            float x0 = quad.x0 - x_offset;
-            float x1 = quad.x1 - x_offset;
-            float y0 = quad.y0 + y_offset;
-            float y1 = quad.y1 + y_offset;
+            float x0 = pixel_to_gl_x(quad.x0 - x_offset);
+            float x1 = pixel_to_gl_x(quad.x1 - x_offset);
+            float y0 = pixel_to_gl_y(-quad.y0 + y_offset);
+            float y1 = pixel_to_gl_y(-quad.y1 + y_offset);
 
-            vertices[vertex_count++] = Point(x0, y0, quad.s0, quad.t0); //top left
-            vertices[vertex_count++] = Point(x1, y0, quad.s1, quad.t0); //top right
-            vertices[vertex_count++] = Point(x1, y1, quad.s1, quad.t1); //bottom right
-            vertices[vertex_count++] = Point(x0, y0, quad.s0, quad.t0); //top left
-            vertices[vertex_count++] = Point(x1, y1, quad.s1, quad.t1); //bottom right
-            vertices[vertex_count++] = Point(x0, y1, quad.s0, quad.t1); //bottom left
+            vertices ~= [x0, y0, quad.s0, quad.t0]; //top left
+            vertices ~= [x1, y0, quad.s1, quad.t0]; //top right
+            vertices ~= [x1, y1, quad.s1, quad.t1]; //bottom right
+            vertices ~= [x0, y0, quad.s0, quad.t0]; //top left
+            vertices ~= [x1, y1, quad.s1, quad.t1]; //bottom right
+            vertices ~= [x0, y1, quad.s0, quad.t1]; //bottom left
+
+            vertex_count+=6;
         }
-        return vertices;
+
+        glBindBuffer(GL_ARRAY_BUFFER, texture.b.vbo);
+        auto v = vertex_count;
+        glBufferData(GL_ARRAY_BUFFER, vertices.length * float.sizeof,
+                     vertices.ptr, GL_DYNAMIC_DRAW);
+        program.draw_array(texture.b.vao, v);
     }
 }
 
+float pixel_to_gl_x(float pixel_pos, float screen_size=640)
+{
+    float half_screen = 0.5f * screen_size;
+    return (pixel_pos) / (half_screen);
+}
+
+float pixel_to_gl_y(float pixel_pos, float screen_size=640)
+{
+    float half_screen = 0.5f * screen_size;
+    return (pixel_pos) / (half_screen);
+}

@@ -8,7 +8,7 @@ import util.gl;
 import util.ext_lib;
 
 struct Texture {
-    uint vao;
+    GLBuffer b;
     uint texture;
 }
 
@@ -63,8 +63,8 @@ class TexturedQuad : IComponent
             0, 1, 3,
             1, 2, 3
         ];
-        auto vao = program.create_indexed_buffer(vertices, indices);
-        texture.vao = vao;
+        texture.b = program.create_indexed_buffer(vertices, indices);
+        auto vao = texture.b.vao;
 
         auto image = load_image("test.png");
         scope(exit) free_image(&image);
@@ -77,7 +77,7 @@ class TexturedQuad : IComponent
 
     void run(Context ctx) {
         program.use();
-        program.draw_textured_elements(texture.texture, texture.vao, index_count);
+        program.draw_textured_elements(texture.texture, texture.b.vao, index_count);
     }
 }
 
