@@ -6,6 +6,9 @@ import derelict.glfw3.glfw3;
 import derelict.opengl;
 import manager.router;
 import manager.component;
+import util.font;
+import std.stdio;
+
 
 extern(C) 
 void error_callback(int error, const(char)* description) nothrow
@@ -27,16 +30,19 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 
 class App {
+    GLFWwindow* window;
     FrameBuffer frame_buffer;
     IRouter router;
     double dt = 0;
+    Font font;
+    FontRenderer font_renderer;
     bool component_initialized = false;
 
     this(IRouter router) {
         this.router = router;
     }
 
-    void run() {
+    void init() {
         DerelictGLFW3.load();
         DerelictGL3.load();
         glfwSetErrorCallback(&error_callback);
@@ -44,24 +50,29 @@ class App {
         {
             writeln("failed to init glfw");
         }
-        scope(exit) glfwTerminate();
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        GLFWwindow* window = glfwCreateWindow(640, 640, "Destruction", null, null);
+        window = glfwCreateWindow(640, 640, "Destruction", null, null);
         if (!window)
         {
             writeln("could not create window");
         }
-        scope(exit) glfwDestroyWindow(window);
 
         glfwMakeContextCurrent(window);
         auto vers = DerelictGL3.reload();
         glfwSwapInterval(1);
 
         glfwSetKeyCallback(window, &key_callback);
-    
+        
+        font.init();
+        font_renderer.use_font(&font);
+        font_renderer.init();
+    }
+
+    void run() {
+        init(); 
         Context context;
         while (!glfwWindowShouldClose(window)) {
             auto start_time = glfwGetTime();
@@ -71,6 +82,7 @@ class App {
 
             context.frame_buffer = frame_buffer;
             context.dt = dt;
+            context.font = &font_renderer;
             auto component = router.get_current();
             if (!component_initialized) {
                 component_initialized = true;
@@ -82,5 +94,7 @@ class App {
             glfwPollEvents();
             dt = glfwGetTime() - start_time;
         }
+        glfwDestroyWindow(window);
+        glfwTerminate();
     }
 }

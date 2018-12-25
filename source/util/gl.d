@@ -49,10 +49,15 @@ struct GLProgram {
         return b;
     }
 
-    void stream_to_buffer(T1)(uint vbo, T1[] vertices) {
+    void stream_to_buffer(T1)(uint vao, uint vbo, T1[] vertices) {
+        glBindVertexArray(vao);        
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, vertices.length * float.sizeof,
                      vertices.ptr, GL_DYNAMIC_DRAW);
+    }
+
+    void bind_texture(uint texture) {
+        glBindTexture(GL_TEXTURE_2D, texture); 
     }
 
     uint load_texture(Image image) {

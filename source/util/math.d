@@ -474,3 +474,12 @@ T[] lerp(T)(T[] v1, T[] v2, T t) {
     return lerped;
 }
 
+float pixel_to_gl_x(float pixel_pos, float screen_size=640) {
+    float half_screen = 0.5f * screen_size;
+    return (pixel_pos) / (half_screen);
+}
+
+float pixel_to_gl_y(float pixel_pos, float screen_size=640) {
+    float half_screen = 0.5f * screen_size;
+    return (pixel_pos) / (half_screen);
+}

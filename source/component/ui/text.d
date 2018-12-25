@@ -5,7 +5,7 @@ import manager.component;
 import util.math;
 import util.gl;
 import util.ext_lib;
-
+import util.font;
 import std.stdio; 
 
 struct Texture {
@@ -13,138 +13,12 @@ struct Texture {
     GLBuffer b;
 }
 
-struct Font {
-    private {
-    float _font_size = 32f;
-    Image _img;
-    stbtt_bakedchar[96] _character_data;
-    stbtt_fontinfo _font_info;
-    }
-    
-    Image img() {
-        return _img;
-    }
-
-    float size() {
-        return _font_size;
-    }
-
-    void init(string font_file = "/System/Library/Fonts/Keyboard.ttf") {
-        import std.file;
-        int buffer_width = 512;
-        int buffer_height = 512;
-        ubyte[512*512] temp_bitmap;
-        auto font = cast(ubyte*)read(font_file);
-
-        stbtt_InitFont(&_font_info, font,
-                       stbtt_GetFontOffsetForIndex(font, 0));
-        stbtt_BakeFontBitmap(font, 0, size,
-                             temp_bitmap.ptr, buffer_width, buffer_height,
-                             32, 96, _character_data.ptr);
-
-        _img.copy(buffer_width, buffer_height, 1, temp_bitmap.ptr);
-    }
-
-    float line_gap() {
-        int ascent, descent, line_gap;
-        float scale = stbtt_ScaleForPixelHeight(&_font_info, size);
-        stbtt_GetFontVMetrics(&_font_info, &ascent, &descent, &line_gap);
-        float value = scale * (ascent - descent + line_gap); //pixels
-        return value;
-    }
-
-    float[] make_text_vertices(string text, float x, float y) {
-        import std.encoding;
-        float[] vertices;
-        
-        y = -y; //out coordiate y is up, but in stb y is down
-        foreach (c; text.codePoints) {
-            stbtt_aligned_quad quad;
-            stbtt_GetBakedQuad(_character_data.ptr, 512, 512,
-                               cast(char)c-32, &x, &y, &quad, 1);//1=opengl & d3d10+,0=d3d9
-
-            float x0 = pixel_to_gl_x(quad.x0);
-            float x1 = pixel_to_gl_x(quad.x1);
-            float y0 = pixel_to_gl_y(-quad.y0);
-            float y1 = pixel_to_gl_y(-quad.y1);
-
-            vertices ~= [x0, y0, quad.s0, quad.t0]; //top left
-            vertices ~= [x1, y0, quad.s1, quad.t0]; //top right
-            vertices ~= [x1, y1, quad.s1, quad.t1]; //bottom right
-            vertices ~= [x0, y0, quad.s0, quad.t0]; //top left
-            vertices ~= [x1, y1, quad.s1, quad.t1]; //bottom right
-            vertices ~= [x0, y1, quad.s0, quad.t1]; //bottom left
-        }
-        
-        return vertices;
-    }
-}
-
-
-class Text : IComponent
-{
-    import std.math;
-    GLProgram program;
-    Texture texture;
-    Font font;
-
-    string vertex_shader_text =
-    "#version 330 core\n" ~
-    "layout (location = 0) in vec2 in_pos;\n" ~
-    "layout (location = 1) in vec2 in_texture;\n" ~
-    "out vec2 Text_Coord;\n" ~
-    "void main()\n" ~
-    "{\n" ~
-    "   gl_Position = vec4(in_pos, 0.0, 1.0);\n" ~
-    "   Text_Coord = in_texture;\n" ~
-    "}\n";
-
-    string fragment_shader_text =
-    "#version 330 core\n" ~
-    "in vec2 Text_Coord;\n" ~
-    "out vec4 FragColor;\n" ~
-    "uniform sampler2D texture1;\n" ~
-    "void main()\n" ~
-    "{\n" ~
-    "   vec4 color = texture(texture1, Text_Coord);\n" ~
-    "   FragColor = vec4(1.0, 1.0, 1.0, color.r);\n" ~
-    "}\n";
-
-
-    void initialize(Context ctx) {
-        font.init();
-        program = create_program(vertex_shader_text,
-                                 fragment_shader_text,
-                                 ["in_pos", "in_texture"]);
-
-        texture.b = program.make_buffer();
-        texture.texture = program.load_texture(font.img);
-
-        program.describe_attrib(texture.b.vao, "in_pos", 2, 4, 0);
-        program.describe_attrib(texture.b.vao, "in_texture", 2, 4, 2);
-    }
+class Text : IComponent {
+    void initialize(Context ctx) {}
     
     void run(Context ctx) {
-        program.use();
-        draw_text("This is some awesome text", -100, 100);
-    }
-
-    void draw_text(string text, float x, float y) {
-
-        float[] vertices = font.make_text_vertices(text, x, y);
-        auto vertex_count = vertices.length / 4; 
-
-        program.stream_to_buffer(texture.b.vbo, vertices);
-        program.draw_array(texture.b.vao, vertex_count);
+        auto font = ctx.font;
+        font.draw("This is some awesome text", -100, 100);
     }
 }
 
-float pixel_to_gl_x(float pixel_pos, float screen_size=640) {
-    float half_screen = 0.5f * screen_size;
-    return (pixel_pos) / (half_screen);
-}
-
-float pixel_to_gl_y(float pixel_pos, float screen_size=640) {
-    float half_screen = 0.5f * screen_size;
-    return (pixel_pos) / (half_screen);
-}
