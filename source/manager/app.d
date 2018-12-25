@@ -85,13 +85,13 @@ class App {
             context.frame_buffer = frame_buffer;
             context.dt = dt;
             context.font = &font_renderer;
-            font_renderer.draw("dt: " ~ to!string(dt * 1000), -320, 320 - font.line_gap);            
             auto component = router.get_current();
             if (!component_initialized) {
                 component_initialized = true;
                 component.initialize(context);
             }
             component.run(context);
+            font_renderer.draw("dt: " ~ to!string(dt * 1000), -320, 320 - font.line_gap);            
 
             glfwSwapBuffers(window);
             glfwPollEvents();
