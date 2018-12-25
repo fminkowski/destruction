@@ -47,10 +47,10 @@ struct Font {
 
     float[] make_text_vertices(string text, float x, float y) {
         import std.encoding;
-        float[] vertices;
+        float[] vertices = new float[24 * text.length];
         
         y = -y; //out coordiate y is up, but in stb y is down
-        foreach (c; text.codePoints) {
+        foreach (i, c; text.codePoints) {
             stbtt_aligned_quad quad;
             stbtt_GetBakedQuad(_character_data.ptr, 512, 512,
                                cast(char)c-32, &x, &y, &quad, 1);//1=opengl & d3d10+,0=d3d9
@@ -60,12 +60,12 @@ struct Font {
             float y0 = pixel_to_gl_y(-quad.y0);
             float y1 = pixel_to_gl_y(-quad.y1);
 
-            vertices ~= [x0, y0, quad.s0, quad.t0]; //top left
-            vertices ~= [x1, y0, quad.s1, quad.t0]; //top right
-            vertices ~= [x1, y1, quad.s1, quad.t1]; //bottom right
-            vertices ~= [x0, y0, quad.s0, quad.t0]; //top left
-            vertices ~= [x1, y1, quad.s1, quad.t1]; //bottom right
-            vertices ~= [x0, y1, quad.s0, quad.t1]; //bottom left
+            vertices[24*i    .. 24*i+4] = [x0, y0, quad.s0, quad.t0]; //top left
+            vertices[24*i+4  .. 24*i+8] = [x1, y0, quad.s1, quad.t0]; //top right
+            vertices[24*i+8  .. 24*i+12] = [x1, y1, quad.s1, quad.t1]; //bottom right
+            vertices[24*i+12 .. 24*i+16] = [x0, y0, quad.s0, quad.t0]; //top left
+            vertices[24*i+16 .. 24*i+20] = [x1, y1, quad.s1, quad.t1]; //bottom right
+            vertices[24*i+20 .. 24*i+24] = [x0, y1, quad.s0, quad.t1]; //bottom left
         }
         
         return vertices;
