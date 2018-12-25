@@ -9,15 +9,84 @@ import util.ext_lib;
 import std.stdio; 
 
 struct Texture {
-    uint vao;
     uint texture;
+    GLBuffer b;
 }
+
+struct Font {
+    private {
+    float _font_size = 32f;
+    Image _img;
+    stbtt_bakedchar[96] _character_data;
+    stbtt_fontinfo _font_info;
+    }
+    
+    Image img() {
+        return _img;
+    }
+
+    float size() {
+        return _font_size;
+    }
+
+    void init(string font_file = "/System/Library/Fonts/Keyboard.ttf") {
+        import std.file;
+        int buffer_width = 512;
+        int buffer_height = 512;
+        ubyte[512*512] temp_bitmap;
+        auto font = cast(ubyte*)read(font_file);
+
+        stbtt_InitFont(&_font_info, font,
+                       stbtt_GetFontOffsetForIndex(font, 0));
+        stbtt_BakeFontBitmap(font, 0, size,
+                             temp_bitmap.ptr, buffer_width, buffer_height,
+                             32, 96, _character_data.ptr);
+
+        _img.copy(buffer_width, buffer_height, 1, temp_bitmap.ptr);
+    }
+
+    float line_gap() {
+        int ascent, descent, line_gap;
+        float scale = stbtt_ScaleForPixelHeight(&_font_info, size);
+        stbtt_GetFontVMetrics(&_font_info, &ascent, &descent, &line_gap);
+        float value = scale * (ascent - descent + line_gap); //pixels
+        return value;
+    }
+
+    float[] make_text_vertices(string text, float x, float y) {
+        import std.encoding;
+        float[] vertices;
+        
+        y = -y; //out coordiate y is up, but in stb y is down
+        foreach (c; text.codePoints) {
+            stbtt_aligned_quad quad;
+            stbtt_GetBakedQuad(_character_data.ptr, 512, 512,
+                               cast(char)c-32, &x, &y, &quad, 1);//1=opengl & d3d10+,0=d3d9
+
+            float x0 = pixel_to_gl_x(quad.x0);
+            float x1 = pixel_to_gl_x(quad.x1);
+            float y0 = pixel_to_gl_y(-quad.y0);
+            float y1 = pixel_to_gl_y(-quad.y1);
+
+            vertices ~= [x0, y0, quad.s0, quad.t0]; //top left
+            vertices ~= [x1, y0, quad.s1, quad.t0]; //top right
+            vertices ~= [x1, y1, quad.s1, quad.t1]; //bottom right
+            vertices ~= [x0, y0, quad.s0, quad.t0]; //top left
+            vertices ~= [x1, y1, quad.s1, quad.t1]; //bottom right
+            vertices ~= [x0, y1, quad.s0, quad.t1]; //bottom left
+        }
+        
+        return vertices;
+    }
+}
+
 
 class Text : IComponent
 {
     import std.math;
     GLProgram program;
     Texture texture;
+    Font font;
 
     string vertex_shader_text =
     "#version 330 core\n" ~
@@ -41,101 +110,41 @@ class Text : IComponent
     "   FragColor = vec4(1.0, 1.0, 1.0, color.r);\n" ~
     "}\n";
 
-    stbtt_bakedchar[96] cdata;
-    ubyte[512*512] temp_bitmap;
-    Image font_image;
-
-    stbtt_fontinfo font_info;
-    float font_size = 32f;
-    void init_font() {
-        import std.file;
-        int buffer_width = 512;
-        int buffer_height = 512;
-        string font_file = "/System/Library/Fonts/Keyboard.ttf";
-        auto font = cast(ubyte*)read(font_file);
-
-        stbtt_InitFont(&font_info, font,
-                       stbtt_GetFontOffsetForIndex(font, 0));
-        stbtt_BakeFontBitmap(font, 0, font_size,
-                             temp_bitmap.ptr, buffer_width, buffer_height,
-                             32, 96, cdata.ptr);
-
-        font_image.data = temp_bitmap.ptr;
-        font_image.w = buffer_width;
-        font_image.h = buffer_height;
-        font_image.c = 1;
-        font_image.flip;
-    }
-
-    float line_gap() {
-        int ascent, descent, line_gap;
-        float scale = stbtt_ScaleForPixelHeight(&font_info, font_size);
-        stbtt_GetFontVMetrics(&font_info, &ascent, &descent, &line_gap);
-        float value = scale * (ascent - descent + line_gap); //pixels
-        return value;
-    }
 
     void initialize(Context ctx) {
-        init_font();
+        font.init();
         program = create_program(vertex_shader_text,
                                  fragment_shader_text,
                                  ["in_pos", "in_texture"]);
 
-        float[16] vertices = [
-             0.5f,  0.5f, 1.0f, 1.0f,
-             0.5f, -0.5f, 1.0f, 0.0f,
-            -0.5f, -0.5f, 0.0f, 0.0f,
-            -0.5f,  0.5f, 0.0f, 1.0f
-        ];
-        uint[6] indices = [  
-            0, 1, 3,
-            1, 2, 3
-        ];
-        texture.vao = program.create_indexed_buffer(vertices, indices);
-        texture.texture = program.load_texture(font_image);
-        font_image.write;
+        texture.b = program.make_buffer();
+        texture.texture = program.load_texture(font.img);
 
-        program.describe_attrib(texture.vao, "in_pos", 2, 4, 0);
-        program.describe_attrib(texture.vao, "in_texture", 2, 4, 2);
+        program.describe_attrib(texture.b.vao, "in_pos", 2, 4, 0);
+        program.describe_attrib(texture.b.vao, "in_texture", 2, 4, 2);
     }
     
     void run(Context ctx) {
         program.use();
-        program.draw_textured_elements(texture.vao, texture.texture, 6);
+        draw_text("This is some awesome text", -100, 100);
     }
 
-    import std.encoding;
-    struct Point {
-        float x, y, s, t;
-    }
-    Point[] draw_text(string text, float x, float y) {
+    void draw_text(string text, float x, float y) {
 
-        const int vertices_per_quad = 6;
-        auto vertices = new Point[text.length];
-        
-        //make the origin the top-left of the window
-        float x_offset = 0;
-        float y_offset = line_gap();
+        float[] vertices = font.make_text_vertices(text, x, y);
+        auto vertex_count = vertices.length / 4; 
 
-        int vertex_count = 0;
-        foreach (c; text.codePoints) {
-            writeln(c);
-            stbtt_aligned_quad quad;
-            stbtt_GetBakedQuad(cdata.ptr, 512, 512, c-32, &x, &y, &quad, 1);//1=opengl & d3d10+,0=d3d9
-
-            float x0 = quad.x0 - x_offset;
-            float x1 = quad.x1 - x_offset;
-            float y0 = quad.y0 + y_offset;
-            float y1 = quad.y1 + y_offset;
-
-            vertices[vertex_count++] = Point(x0, y0, quad.s0, quad.t0); //top left
-            vertices[vertex_count++] = Point(x1, y0, quad.s1, quad.t0); //top right
-            vertices[vertex_count++] = Point(x1, y1, quad.s1, quad.t1); //bottom right
-            vertices[vertex_count++] = Point(x0, y0, quad.s0, quad.t0); //top left
-            vertices[vertex_count++] = Point(x1, y1, quad.s1, quad.t1); //bottom right
-            vertices[vertex_count++] = Point(x0, y1, quad.s0, quad.t1); //bottom left
-        }
-        return vertices;
+        program.stream_to_buffer(texture.b.vbo, vertices);
+        program.draw_array(texture.b.vao, vertex_count);
     }
 }
 
+float pixel_to_gl_x(float pixel_pos, float screen_size=640) {
+    float half_screen = 0.5f * screen_size;
+    return (pixel_pos) / (half_screen);
+}
+
+float pixel_to_gl_y(float pixel_pos, float screen_size=640) {
+    float half_screen = 0.5f * screen_size;
+    return (pixel_pos) / (half_screen);
+}

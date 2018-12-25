@@ -3,38 +3,56 @@ module util.gl;
 import derelict.opengl;
 import util.ext_lib;
 
+struct GLBuffer {
+    uint vao, vbo, ebo;
+}
 
 struct GLProgram {
     GLint id;
     GLuint[string] attribs;
     GLint[string] uniforms;
 
-    uint create_buffer(T)(T vertices) {
+    GLBuffer make_buffer() {
         uint vbo, vao;
         glGenVertexArrays(1, &vao);
         glGenBuffers(1, &vbo);
         glBindVertexArray(vao);
 
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, vertices.sizeof, vertices.ptr, GL_STATIC_DRAW);
-        return vao;
+        GLBuffer buffer;
+        buffer.vao = vao;
+        buffer.vbo = vbo;
+        return buffer;
     }
 
-    uint create_indexed_buffer(T1, T2)(T1 vertices, T2 indices) {
-        uint vbo, vao, ebo;
-        glGenVertexArrays(1, &vao);
-        glGenBuffers(1, &vbo);
-        glGenBuffers(1, &ebo);
+    uint create_buffer(T)(T vertices) {
+        auto b = make_buffer();
+        glBufferData(GL_ARRAY_BUFFER, vertices.sizeof, vertices.ptr, GL_STATIC_DRAW);
+        return b.vao;
+    }
 
-        glBindVertexArray(vao);
+    GLBuffer create_indexed_buffer(T1, T2)(T1 vertices, T2 indices) {
+        uint vbo, vao, ebo;
+        GLBuffer b;
+        glGenVertexArrays(1, &b.vao);
+        glGenBuffers(1, &b.vbo);
+        glGenBuffers(1, &b.ebo);
+
+        glBindVertexArray(b.vao);
         
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, b.vbo);
         glBufferData(GL_ARRAY_BUFFER, vertices.sizeof, vertices.ptr, GL_STATIC_DRAW);
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, b.ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.sizeof, indices.ptr, GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
-        return vao;
+        return b;
+    }
+
+    void stream_to_buffer(T1)(uint vbo, T1[] vertices) {
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, vertices.length * float.sizeof,
+                     vertices.ptr, GL_DYNAMIC_DRAW);
     }
 
     uint load_texture(Image image) {
@@ -44,8 +62,8 @@ struct GLProgram {
         // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
         glBindTexture(GL_TEXTURE_2D, texture); 
         // set the texture wrapping parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         // set texture filtering parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -95,24 +113,24 @@ struct GLProgram {
         glUseProgram(id);
     }
 
-    void draw_points(uint vao, int count) {
+    void draw_points(uint vao, size_t count) {
         glBindVertexArray(vao);
         glEnable(GL_PROGRAM_POINT_SIZE);
-        glDrawArrays(GL_POINTS, 0, count);
+        glDrawArrays(GL_POINTS, 0, cast(int)count);
     }
 
-    void draw_array(uint vao, int count) {
+    void draw_array(uint vao, size_t count) {
         glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, count);
+        glDrawArrays(GL_TRIANGLES, 0, cast(int)count);
     }
 
-    void draw_elements(uint vao, int index_count) {
+    void draw_elements(uint vao, size_t index_count) {
         glBindVertexArray(vao);
-        glDrawElements(GL_TRIANGLES, index_count,
+        glDrawElements(GL_TRIANGLES, cast(int)index_count,
                        GL_UNSIGNED_INT, null);
     }
 
-    void draw_textured_elements(uint texture, uint vao, int index_count) {
+    void draw_textured_elements(uint texture, uint vao, size_t index_count) {
         glBindTexture(GL_TEXTURE_2D, texture);
         draw_elements(vao, index_count);
     }

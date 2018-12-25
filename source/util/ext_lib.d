@@ -29,12 +29,16 @@ stbi_flip_vertically_on_write_t stbi_flip_vertically_on_write;
 
 
 struct Image {
-    ubyte* data;
+    ubyte[] buffer;
     int w;
     int h;
     int c;
     int size() {
         return w*h*c;
+    }
+
+    ubyte* data() {
+        return buffer.ptr;
     }
 
     void write() {
@@ -46,10 +50,19 @@ struct Image {
             for (auto x = 0; x < w*c; x++) {
                 auto i1 = y * w * c + x;
                 auto i2 = (h-1-y) * w * c + x;
-                auto tmp = data[i1];
-                data[i1] = data[i2];
-                data[i2] = tmp;
+                auto tmp = buffer[i1];
+                buffer[i1] = buffer[i2];
+                buffer[i2] = tmp;
             }
+        }
+    }
+
+    void copy(int w, int h, int c, ubyte* buffer) {
+        this.w = w;
+        this.h = h;
+        this.c = c;
+        for (auto i = 0; i < w * h * c; i++) {
+           this.buffer ~= buffer[i]; 
         }
     }
 }
@@ -57,22 +70,10 @@ struct Image {
 Image load_image(string file_name) {
     int w, h, c;
     auto data = stbi_load(toStringz(file_name), &w, &h, &c, 0);
+    scope(exit) stbi_image_free(data);
     Image image;
-    image.data = data;
-    image.w = w;
-    image.h = h;
-    image.c = c;
+    image.copy(w, h, c, data);
     return image;
-}
-
-void free_image(Image* image) {
-    if (image.data) {
-        stbi_image_free(image.data);
-        image.data = null;
-        image.w = 0;
-        image.h = 0;
-        image.c = 0;
-    }
 }
 
 
