@@ -73,12 +73,6 @@ struct Font {
 }
 
 import derelict.opengl;
-import manager.component;
-import util.math;
-import util.gl;
-import util.ext_lib;
-import util.font;
-import std.stdio; 
 
 struct Texture {
     uint texture;
