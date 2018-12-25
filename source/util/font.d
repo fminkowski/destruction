@@ -116,6 +116,10 @@ struct FontRenderer {
         this.font = font;
     }
 
+    float line_gap() {
+        return font.line_gap;
+    }
+
     void init() {
         program = create_program(vertex_shader_text,
                                  fragment_shader_text,
