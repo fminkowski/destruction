@@ -58,7 +58,7 @@ class SimpleTriangle : IComponent
         t += ctx.dt;
         auto c = cos(t);
         auto s = sin(t);
-        float[] v = [c*c, s*s, c*c];
+        auto v = [c*c, s*s, c*c];
         program.set_uniform("scale", v);
 
         program.draw_array(vao, vertex_count);

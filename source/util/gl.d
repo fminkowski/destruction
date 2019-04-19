@@ -93,23 +93,23 @@ struct GLProgram {
         glEnableVertexAttribArray(a);
     } 
 
-    void set_uniform(string uniform, float[] values) {
+    void set_uniform(T)(string uniform, T[] values) {
         auto id = uniforms[uniform];
         switch (values.length) {
         case 1:
-            glUniform1f(id, values[0]);
+            glUniform1f(id, cast(float)values[0]);
             break;
         case 2:
-            glUniform2f(id, values[0], values[1]);
+            glUniform2f(id, cast(float)values[0], cast(float)values[1]);
             break;
         case 3:
-            glUniform3f(id, values[0], values[1], values[2]);
+            glUniform3f(id, cast(float)values[0], cast(float)values[1], cast(float)values[2]);
             break;
         case 4:
-            glUniform4f(id, values[0], values[1], values[2], values[3]);
+            glUniform4f(id, cast(float)values[0], cast(float)values[1], cast(float)values[2], cast(float)values[3]);
             break;
         default:
-            glUniformMatrix4fv(id, 1, GL_TRUE, values.ptr);
+            glUniformMatrix4fv(id, 1, GL_TRUE, cast(float*)values.ptr);
             break;
         }
     }

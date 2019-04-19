@@ -49,7 +49,7 @@ struct Font {
         import std.encoding;
         float[] vertices = new float[24 * text.length];
         
-        y = -y; //out coordiate y is up, but in stb y is down
+        y = -y; //our coordiate y is up, but in stb y is down
         foreach (i, c; text.codePoints) {
             stbtt_aligned_quad quad;
             stbtt_GetBakedQuad(_character_data.ptr, 512, 512,

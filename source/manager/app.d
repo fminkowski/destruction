@@ -18,7 +18,6 @@ void error_callback(int error, const(char)* description) nothrow
     {
         writeln("Error: ", to!string(description));
     } catch (Exception e) {
-
     }
 }
 
@@ -91,7 +90,7 @@ class App {
                 component.initialize(context);
             }
             component.run(context);
-            font_renderer.draw("dt: " ~ to!string(dt * 1000), -320, 320 - font.line_gap);            
+            font_renderer.draw("dt: " ~ to!string(dt * 1000) ~ " ms", -320, 320 - font.line_gap);            
 
             glfwSwapBuffers(window);
             glfwPollEvents();
